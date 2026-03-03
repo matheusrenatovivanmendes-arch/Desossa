@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DesossaControl v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root {
+  --bg:#0d0f0e; --surface:#151918; --surface2:#1c2220;
+  --border:#2a3330; --accent:#c8f04a; --accent2:#4af0a0;
+  --danger:#f04a4a; --warning:#f0b84a;
+  --text:#e8ede9; --muted:#6b7d76; --dim:#3d4f48;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px); background-size:40px 40px; opacity:.3; pointer-events:none; z-index:0; }
+.w { position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:32px 24px 80px; }
+
+/* HEADER */
+header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+.brand { display:flex; align-items:center; gap:16px; }
+.bi { width:52px; height:52px; background:var(--accent); border-radius:8px; display:grid; place-items:center; font-size:26px; }
+.bt h1 { font-family:'Bebas Neue',sans-serif; font-size:2.4rem; letter-spacing:2px; line-height:1; }
+.bt p { color:var(--muted); font-size:.8rem; letter-spacing:1px; text-transform:uppercase; }
+.hbadge { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 16px; font-family:'DM Mono',monospace; font-size:.75rem; color:var(--muted); letter-spacing:1px; }
+.hbadge span { color:var(--accent); }
+
+/* SECTION TITLE */
+.st { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+.st::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* INPUTS */
+.ir { display:grid; gap:12px; margin-bottom:28px; }
+.c2 { grid-template-columns:repeat(2,1fr); }
+.c3 { grid-template-columns:repeat(3,1fr); }
+.c4 { grid-template-columns:repeat(4,1fr); }
+.f { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; transition:border-color .2s,background .2s; position:relative; }
+.f:focus-within { border-color:var(--accent); background:var(--surface2); }
+.f label { display:block; font-size:.7rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.f input { background:transparent; border:none; outline:none; color:var(--text); font-family:'DM Mono',monospace; font-size:1.1rem; width:100%; caret-color:var(--accent); }
+.f input::placeholder { color:var(--dim); }
+.f .u { position:absolute; right:16px; bottom:14px; font-family:'DM Mono',monospace; font-size:.75rem; color:var(--muted); }
+.hl { border-color:var(--accent) !important; background:linear-gradient(135deg,rgba(200,240,74,.05),transparent) !important; }
+.hl label { color:var(--accent) !important; }
+.hl input { font-size:1.4rem !important; }
+
+/* CUSTOM CUT */
+.f.custom { border-color:rgba(200,240,74,.35); animation:slideIn .25s ease; }
+@keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+.rm-btn { position:absolute; top:10px; right:10px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; padding:2px 6px; border-radius:4px; transition:color .2s,background .2s; line-height:1; }
+.rm-btn:hover { color:var(--danger); background:rgba(240,74,74,.12); }
+
+/* BUTTONS */
+.btn-row { display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
+.btn { flex:1; min-width:140px; background:var(--accent); color:#0d0f0e; border:none; border-radius:10px; font-family:'Bebas Neue',sans-serif; font-size:1.25rem; letter-spacing:2px; padding:16px 20px; cursor:pointer; transition:transform .15s,box-shadow .15s,filter .15s; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; }
+.btn:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(200,240,74,.25); filter:brightness(1.1); }
+.btn:active { transform:translateY(0); }
+.btn.ghost { background:var(--surface); color:var(--text); border:1px solid var(--border); }
+.btn.ghost:hover { box-shadow:0 8px 24px rgba(0,0,0,.4); border-color:var(--muted); filter:none; }
+.btn.outline-a { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+.btn.outline-a:hover { background:rgba(200,240,74,.08); box-shadow:0 8px 24px rgba(200,240,74,.15); filter:none; }
+.btn.danger-b { background:transparent; color:var(--danger); border:1px solid rgba(240,74,74,.4); }
+.btn.danger-b:hover { background:rgba(240,74,74,.08); box-shadow:none; filter:none; }
+.btn-add { background:transparent; border:1px dashed rgba(200,240,74,.4); color:var(--accent); border-radius:10px; padding:12px 20px; cursor:pointer; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; display:flex; align-items:center; justify-content:center; gap:8px; transition:background .2s,border-color .2s; width:100%; margin-bottom:20px; }
+.btn-add:hover { background:rgba(200,240,74,.06); border-color:var(--accent); }
+
+/* MODAL */
+.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.overlay.open { display:flex; }
+.modal { background:var(--surface2); border:1px solid var(--border); border-radius:16px; padding:32px; width:100%; max-width:440px; animation:mIn .2s ease; box-shadow:0 24px 80px rgba(0,0,0,.6); }
+@keyframes mIn { from { opacity:0; transform:scale(.95); } to { opacity:1; transform:scale(1); } }
+.modal h2 { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:2px; margin-bottom:6px; }
+.modal p { font-size:.8rem; color:var(--muted); margin-bottom:24px; }
+.modal .f { margin-bottom:14px; }
+.modal .f input { font-size:1rem; }
+.modal-btns { display:flex; gap:10px; margin-top:8px; }
+.modal-btns .btn { font-size:1.1rem; padding:14px 20px; }
+
+/* RESULTS */
+#results { display:none; margin-top:40px; animation:fu .4s ease; }
+@keyframes fu { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.res-bar { display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
+.res-bar .btn { flex:0 1 auto; font-size:1.05rem; padding:12px 22px; min-width:auto; }
+
+/* KPI */
+.kg4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
+.kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; position:relative; overflow:hidden; }
+.kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--kc,var(--accent)); }
+.kpi .kl { font-size:.68rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.kpi .kv { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; line-height:1; color:var(--kc,var(--text)); }
+.kpi .ks { font-size:.75rem; color:var(--muted); margin-top:4px; font-family:'DM Mono',monospace; }
+.kpi.ok { --kc:var(--accent2); }
+.kpi.wn { --kc:var(--warning); }
+.kpi.danger { --kc:var(--danger); border-color:rgba(240,74,74,.4); background:rgba(240,74,74,.05); }
+
+/* ALERT */
+.alert { display:none; background:rgba(240,74,74,.08); border:1px solid rgba(240,74,74,.4); border-left:4px solid var(--danger); border-radius:10px; padding:16px 20px; margin-bottom:28px; color:#f7a0a0; font-size:.88rem; animation:pb 2s infinite; }
+.alert strong { color:var(--danger); font-size:.95rem; display:block; margin-bottom:4px; }
+@keyframes pb { 0%,100% { border-left-color:var(--danger); } 50% { border-left-color:transparent; } }
+
+/* TABLE */
+.tw { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:24px; }
+.th { padding:16px 20px; border-bottom:1px solid var(--border); font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; color:var(--muted); }
+table { width:100%; border-collapse:collapse; }
+thead th { background:var(--surface2); padding:10px 20px; text-align:left; font-size:.68rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); font-family:'DM Mono',monospace; font-weight:400; }
+tbody tr { border-top:1px solid var(--border); transition:background .15s; }
+tbody tr:hover { background:var(--surface2); }
+tbody td { padding:12px 20px; font-size:.88rem; font-family:'DM Mono',monospace; }
+tbody td:first-child { color:var(--text); font-family:'DM Sans',sans-serif; font-weight:500; }
+.pct { color:var(--accent2); }
+tfoot td { padding:14px 20px; background:var(--surface2); border-top:1px solid var(--border); font-family:'DM Mono',monospace; font-size:.88rem; font-weight:500; }
+tfoot td:first-child { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:1px; color:var(--muted); }
+
+/* VARIANCE */
+.vb { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.vl { font-size:.68rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.vv { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--accent); }
+.vd { font-size:.75rem; color:var(--muted); margin-top:4px; }
+
+/* PDF LOADER */
+.pdf-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:200; align-items:center; justify-content:center; flex-direction:column; gap:16px; backdrop-filter:blur(6px); }
+.pdf-overlay.show { display:flex; }
+.pdf-overlay p { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px; color:var(--accent); }
+.spinner { width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* PRINT HEADER - hidden on screen */
+#print-head { display:none; }
+
+/* RESPONSIVE */
+@media (max-width:768px) {
+  .kg4, .c4, .c3 { grid-template-columns:repeat(2,1fr); }
+  header { flex-direction:column; align-items:flex-start; gap:12px; }
+  .vb { grid-template-columns:1fr; }
+  .btn-row, .res-bar { flex-direction:column; }
+}
+
+/* ======= PRINT ======= */
+@media print {
+  * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  body { background:#fff !important; color:#111 !important; }
+  body::before { display:none !important; }
+  header, .no-print, .btn-row, .btn-add, .overlay, .pdf-overlay, .res-bar { display:none !important; }
+  .w { padding:0 !important; max-width:100% !important; }
+  #results { display:block !important; margin:0 !important; animation:none !important; }
+  #print-head { display:block !important; margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid #ccc; }
+  .kpi { background:#f5f5f5 !important; border-color:#ddd !important; }
+  .kpi .kv { color:#111 !important; }
+  .kpi .kl, .kpi .ks { color:#555 !important; }
+  .kpi.ok .kv { color:#2a7a2a !important; }
+  .kpi.wn .kv { color:#a07000 !important; }
+  .kpi.danger { background:#fff0f0 !important; }
+  .kpi.danger .kv { color:#c00 !important; }
+  .tw { background:#fff !important; border-color:#ccc !important; }
+  .th { background:#f0f0f0 !important; color:#333 !important; border-color:#ccc !important; }
+  thead th { background:#f5f5f5 !important; color:#333 !important; }
+  tbody td { color:#111 !important; }
+  .pct { color:#2a7a2a !important; }
+  tfoot td { background:#f0f0f0 !important; color:#111 !important; }
+  .vb { background:#f5f5f5 !important; border-color:#ddd !important; }
+  .vl { color:#555 !important; }
+  .vv { color:#1a5c1a !important; }
+  .vd { color:#666 !important; }
+  .st { color:#333 !important; }
+  .st::after { background:#ccc !important; }
+  .alert { animation:none !important; }
+  @page { margin:15mm; size:A4; }
+}
+</style>
+</head>
+<body>
+
+<!-- PDF LOADER -->
+<div class="pdf-overlay" id="pdfOverlay">
+  <div class="spinner"></div>
+  <p>Gerando PDF...</p>
+</div>
+
+<!-- MODAL NOVO CORTE -->
+<div class="overlay" id="modalOverlay" onclick="fecharModalFora(event)">
+  <div class="modal">
+    <h2>Adicionar Corte</h2>
+    <p>Insira o nome e o peso do novo corte personalizado.</p>
+    <div class="f">
+      <label>Nome do Corte</label>
+      <input type="text" id="inputNome" placeholder="Ex: Contrafile Especial" maxlength="40" onkeydown="teclaModal(event)">
+    </div>
+    <div class="f">
+      <label>Peso (kg)</label>
+      <input type="number" id="inputKg" placeholder="0.000" step="0.001" min="0" onkeydown="teclaModal(event)">
+      <span class="u">kg</span>
+    </div>
+    <div class="modal-btns">
+      <button class="btn ghost" onclick="fecharModal()" style="flex:1">Cancelar</button>
+      <button class="btn" onclick="adicionarCorte()" style="flex:2">+ Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<div class="w">
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <div class="bi">&#127969;</div>
+      <div class="bt">
+        <h1>DesossaControl</h1>
+        <p>Sistema de Controle de Rendimento Bovino</p>
+      </div>
+    </div>
+    <div class="hbadge">versao <span>2.0</span> &nbsp;|&nbsp; Bovino</div>
+  </header>
+
+  <!-- CARCACA -->
+  <div class="st no-print">Entrada - Carcaca</div>
+  <div class="ir c2 no-print">
+    <div class="f hl">
+      <label>Peso Bruto da Carcaca</label>
+      <input type="number" id="pesoBruto" placeholder="0.000" step="0.001" min="0">
+      <span class="u">kg</span>
+    </div>
+    <div class="f">
+      <label>Identificacao / Lote</label>
+      <input type="text" id="lote" placeholder="Ex: LOTE-2024-001">
+    </div>
+  </div>
+
+  <!-- CORTES -->
+  <div class="st no-print">Cortes Principais</div>
+  <div class="ir c4 no-print" id="gridCortes">
+    <div class="f"><label>Picanha</label><input type="number" data-corte="Picanha" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Alcatra</label><input type="number" data-corte="Alcatra" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Contrafile</label><input type="number" data-corte="Contrafile" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>File Mignon</label><input type="number" data-corte="File Mignon" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Coxao Mole</label><input type="number" data-corte="Coxao Mole" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Coxao Duro</label><input type="number" data-corte="Coxao Duro" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Patinho</label><input type="number" data-corte="Patinho" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Lagarto</label><input type="number" data-corte="Lagarto" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Musculo Diant.</label><input type="number" data-corte="Musculo Dianteiro" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Musculo Tras.</label><input type="number" data-corte="Musculo Traseiro" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Acem</label><input type="number" data-corte="Acem" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Paleta</label><input type="number" data-corte="Paleta" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Fraldinha</label><input type="number" data-corte="Fraldinha" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Maminha</label><input type="number" data-corte="Maminha" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Cupim</label><input type="number" data-corte="Cupim" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Outros Cortes</label><input type="number" data-corte="Outros" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+  </div>
+
+  <!-- BTN ADICIONAR CORTE -->
+  <button class="btn-add no-print" onclick="abrirModal()">+ Adicionar Novo Corte</button>
+
+  <!-- SUBPRODUTOS -->
+  <div class="st no-print">Subprodutos</div>
+  <div class="ir c3 no-print">
+    <div class="f"><label>Osso</label><input type="number" id="osso" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Sebo</label><input type="number" id="sebo" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+    <div class="f"><label>Residuos / Retalhos</label><input type="number" id="residuos" placeholder="0.000" step="0.001" min="0"><span class="u">kg</span></div>
+  </div>
+
+  <!-- BOTOES PRINCIPAIS -->
+  <div class="btn-row no-print">
+    <button class="btn" onclick="calcular()" style="flex:3">Calcular Rendimento</button>
+    <button class="btn danger-b" onclick="zerarSistema()">Zerar Sistema</button>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div id="results">
+
+    <!-- Cabecalho apenas para impressao -->
+    <div id="print-head">
+      <div style="font-size:1.5rem;font-weight:bold;color:#111;font-family:Arial,sans-serif;">DesossaControl - Relatorio de Desossa</div>
+      <div id="printMeta" style="font-size:.8rem;color:#555;margin-top:4px;font-family:monospace;"></div>
+    </div>
+
+    <div class="st" style="margin-top:40px;">Resultado da Analise</div>
+
+    <!-- Barra de acoes dos resultados -->
+    <div class="res-bar">
+      <button class="btn outline-a" onclick="imprimirRelatorio()">Imprimir Relatorio</button>
+      <button class="btn ghost" onclick="salvarPDF()">Salvar em PDF</button>
+    </div>
+
+    <div id="alertaPerda" class="alert">
+      <strong>ALERTA: Perda Invisivel Elevada</strong>
+      A perda invisivel esta acima de 2%, o que pode indicar erro de pesagem ou quebra excessiva.
+    </div>
+
+    <div class="kg4">
+      <div class="kpi">
+        <div class="kl">Peso Bruto</div>
+        <div class="kv" id="kvBruto">--</div>
+        <div class="ks">kg total entrada</div>
+      </div>
+      <div class="kpi ok">
+        <div class="kl">Carne Limpa</div>
+        <div class="kv" id="kvCarne">--</div>
+        <div class="ks" id="ksCarne">-- kg</div>
+      </div>
+      <div class="kpi" id="kpiPerda">
+        <div class="kl">Perda Invisivel</div>
+        <div class="kv" id="kvPerda">--</div>
+        <div class="ks" id="ksPerda">-- kg</div>
+      </div>
+      <div class="kpi wn">
+        <div class="kl">Variancia (S2)</div>
+        <div class="kv" id="kvVariancia">--</div>
+        <div class="ks">dispersao dos cortes</div>
+      </div>
+    </div>
+
+    <!-- Tabela cortes -->
+    <div class="tw">
+      <div class="th">DISTRIBUICAO DOS CORTES</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Corte</th><th>Peso (kg)</th><th>% do Bruto</th><th>% da Carne</th><th>Desvio da Media</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyCortes"></tbody>
+        <tfoot>
+          <tr>
+            <td>TOTAL CARNES</td>
+            <td id="tfKg">--</td>
+            <td class="pct" id="tfPct">--</td>
+            <td class="pct">100%</td>
+            <td>--</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Tabela subprodutos -->
+    <div class="tw">
+      <div class="th">SUBPRODUTOS E PERDA</div>
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Peso (kg)</th><th>% do Bruto</th></tr>
+        </thead>
+        <tbody id="tbodySub"></tbody>
+      </table>
+    </div>
+
+    <!-- Estatisticas -->
+    <div class="st">Analise Estatistica</div>
+    <div class="vb">
+      <div>
+        <div class="vl">Media dos Cortes (x)</div>
+        <div class="vv" id="stMedia">--</div>
+        <div class="vd">kg - media aritmetica dos cortes</div>
+      </div>
+      <div>
+        <div class="vl">Variancia Amostral (S2)</div>
+        <div class="vv" id="stVariancia">--</div>
+        <div class="vd">dispersao em torno da media</div>
+      </div>
+      <div>
+        <div class="vl">Desvio Padrao (S)</div>
+        <div class="vv" id="stDesvio">--</div>
+        <div class="vd">kg - raiz quadrada da variancia</div>
+      </div>
+      <div>
+        <div class="vl">Coef. de Variacao (CV)</div>
+        <div class="vv" id="stCV">--</div>
+        <div class="vd">% - heterogeneidade relativa</div>
+      </div>
+    </div>
+
+  </div><!-- /results -->
+</div><!-- /w -->
+
+<script>
+function el(id) { return document.getElementById(id); }
+
+function fmt(n, dec) {
+  if (dec === undefined) dec = 3;
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+function pct(n) {
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+}
+
+/* ---- MODAL ---- */
+function abrirModal() {
+  el('inputNome').value = '';
+  el('inputKg').value = '';
+  el('modalOverlay').classList.add('open');
+  setTimeout(function() { el('inputNome').focus(); }, 80);
+}
+
+function fecharModal() {
+  el('modalOverlay').classList.remove('open');
+}
+
+function fecharModalFora(e) {
+  if (e.target === el('modalOverlay')) fecharModal();
+}
+
+function teclaModal(e) {
+  if (e.key === 'Enter') adicionarCorte();
+}
+
+function adicionarCorte() {
+  var nome = el('inputNome').value.trim();
+  if (!nome) {
+    el('inputNome').style.outline = '2px solid var(--danger)';
+    el('inputNome').focus();
+    return;
+  }
+  el('inputNome').style.outline = '';
+  var kg = parseFloat(el('inputKg').value) || 0;
+  var grid = el('gridCortes');
+  var div = document.createElement('div');
+  div.className = 'f custom';
+  div.innerHTML =
+    '<label>' + nome + '</label>' +
+    '<input type="number" data-corte="' + nome + '" placeholder="0.000" step="0.001" min="0" value="' + (kg > 0 ? kg : '') + '">' +
+    '<span class="u">kg</span>' +
+    '<button class="rm-btn" onclick="this.parentElement.remove()" title="Remover">x</button>';
+  grid.appendChild(div);
+  fecharModal();
+}
+
+/* ---- CALCULAR ---- */
+function calcular() {
+  var bruto = parseFloat(el('pesoBruto').value) || 0;
+  if (!bruto) { alert('Informe o Peso Bruto da carcaca.'); return; }
+
+  var inputs = document.querySelectorAll('[data-corte]');
+  var cortes = [];
+  inputs.forEach(function(inp) {
+    var v = parseFloat(inp.value) || 0;
+    if (v > 0) cortes.push({ nome: inp.dataset.corte, kg: v });
+  });
+
+  var totalCarnes = cortes.reduce(function(s, c) { return s + c.kg; }, 0);
+  var osso = parseFloat(el('osso').value) || 0;
+  var sebo = parseFloat(el('sebo').value) || 0;
+  var res  = parseFloat(el('residuos').value) || 0;
+  var totalSub = osso + sebo + res;
+  var perda = bruto - totalCarnes - totalSub;
+  var perdaPct = perda / bruto * 100;
+  var aprovPct = totalCarnes / bruto * 100;
+
+  var n = cortes.length;
+  var media = 0, variancia = 0, desvio = 0, cv = 0;
+  if (n > 1) {
+    media = totalCarnes / n;
+    var somaQ = cortes.reduce(function(s, c) { return s + Math.pow(c.kg - media, 2); }, 0);
+    variancia = somaQ / (n - 1);
+    desvio = Math.sqrt(variancia);
+    cv = media > 0 ? (desvio / media) * 100 : 0;
+  } else if (n === 1) {
+    media = cortes[0].kg;
+  }
+
+  /* KPIs */
+  el('kvBruto').textContent = fmt(bruto) + ' kg';
+  el('kvCarne').textContent = pct(aprovPct);
+  el('ksCarne').textContent = fmt(totalCarnes) + ' kg';
+  el('kvPerda').textContent = pct(Math.abs(perdaPct));
+  el('ksPerda').textContent = (perda >= 0 ? '' : '-') + fmt(Math.abs(perda)) + ' kg';
+  el('kvVariancia').textContent = n > 1 ? fmt(variancia, 4) : 'N/D';
+
+  /* Alerta */
+  var alerta = el('alertaPerda');
+  var kpiP   = el('kpiPerda');
+  if (perdaPct > 2) {
+    alerta.style.display = 'block';
+    kpiP.className = 'kpi danger';
+  } else {
+    alerta.style.display = 'none';
+    kpiP.className = 'kpi';
+    kpiP.style.setProperty('--kc', perda < 0 ? 'var(--warning)' : 'var(--accent2)');
+  }
+
+  /* Tabela cortes */
+  var tbody = el('tbodyCortes');
+  tbody.innerHTML = '';
+  cortes.sort(function(a, b) { return b.kg - a.kg; });
+  cortes.forEach(function(c) {
+    var pB = bruto > 0 ? c.kg / bruto * 100 : 0;
+    var pC = totalCarnes > 0 ? c.kg / totalCarnes * 100 : 0;
+    var dv = n > 1 ? c.kg - media : 0;
+    var cor = dv >= 0 ? 'var(--accent2)' : 'var(--warning)';
+    var dvTxt = n > 1 ? (dv >= 0 ? '+' : '') + fmt(dv) + ' kg' : '--';
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + c.nome + '</td>' +
+      '<td>' + fmt(c.kg) + '</td>' +
+      '<td class="pct">' + pct(pB) + '</td>' +
+      '<td class="pct">' + pct(pC) + '</td>' +
+      '<td style="color:' + cor + '">' + dvTxt + '</td>';
+    tbody.appendChild(tr);
+  });
+  el('tfKg').textContent = fmt(totalCarnes);
+  el('tfPct').textContent = pct(aprovPct);
+
+  /* Tabela subprodutos */
+  var tsub = el('tbodySub');
+  tsub.innerHTML = '';
+  var subs = [
+    { nome: 'Osso', kg: osso, danger: false },
+    { nome: 'Sebo', kg: sebo, danger: false },
+    { nome: 'Residuos/Retalhos', kg: res, danger: false },
+    { nome: 'Perda Invisivel', kg: Math.abs(perda), danger: perdaPct > 2 }
+  ];
+  subs.forEach(function(s) {
+    var p = bruto > 0 ? s.kg / bruto * 100 : 0;
+    var cor = s.danger ? 'color:var(--danger)' : '';
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td style="' + cor + '">' + s.nome + '</td>' +
+      '<td style="' + cor + '">' + fmt(s.kg) + '</td>' +
+      '<td class="' + (s.danger ? '' : 'pct') + '" style="' + cor + '">' + pct(p) + '</td>';
+    tsub.appendChild(tr);
+  });
+
+  /* Estatisticas */
+  el('stMedia').textContent    = n > 0 ? fmt(media) + ' kg' : '--';
+  el('stVariancia').textContent = n > 1 ? fmt(variancia, 4) : '--';
+  el('stDesvio').textContent   = n > 1 ? fmt(desvio) + ' kg' : '--';
+  el('stCV').textContent       = n > 1 ? pct(cv) : '--';
+
+  /* Meta impressao */
+  var lote = el('lote').value.trim() || 'Sem Lote';
+  var agora = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  el('printMeta').textContent = 'Lote: ' + lote + '  |  Emitido em: ' + agora + '  |  Peso Bruto: ' + fmt(bruto) + ' kg';
+
+  var res2 = el('results');
+  res2.style.display = 'block';
+  res2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ---- IMPRIMIR ---- */
+function imprimirRelatorio() {
+  if (el('results').style.display === 'none') { alert('Calcule o rendimento primeiro.'); return; }
+  window.print();
+}
+
+/* ---- SALVAR PDF ---- */
+function salvarPDF() {
+  if (el('results').style.display === 'none') { alert('Calcule o rendimento primeiro.'); return; }
+  var lote = (el('lote').value.trim() || 'LOTE').replace(/\s+/g, '-').toUpperCase();
+  var hoje = new Date();
+  var data = String(hoje.getDate()).padStart(2,'0') + String(hoje.getMonth()+1).padStart(2,'0') + hoje.getFullYear();
+  var nomeArquivo = 'DesossaControl_' + lote + '_' + data + '.pdf';
+  var loader = el('pdfOverlay');
+  loader.classList.add('show');
+
+  var clone = el('results').cloneNode(true);
+  clone.style.cssText = 'display:block; animation:none;';
+  var barra = clone.querySelector('.res-bar');
+  if (barra) barra.remove();
+  var btnsRemover = clone.querySelectorAll('.rm-btn');
+  btnsRemover.forEach(function(b) { b.remove(); });
+
+  var estilo = document.createElement('style');
+  estilo.textContent =
+    '.kpi{background:#f5f5f5!important;border:1px solid #ddd!important}' +
+    '.kpi .kv{color:#111!important}.kpi .kl,.kpi .ks{color:#555!important}' +
+    '.kpi.ok .kv{color:#2a7a2a!important}.kpi.wn .kv{color:#a07000!important}' +
+    '.kpi.danger{background:#fff0f0!important}.kpi.danger .kv{color:#c00!important}' +
+    '.tw{background:#fff!important;border:1px solid #ccc!important}' +
+    '.th{background:#f0f0f0!important;color:#333!important}' +
+    'thead th{background:#f5f5f5!important;color:#333!important}' +
+    'tbody td{color:#111!important}.pct{color:#2a7a2a!important}' +
+    'tfoot td{background:#f0f0f0!important;color:#111!important}' +
+    '.vb{background:#f5f5f5!important;border:1px solid #ddd!important}' +
+    '.vl{color:#555!important}.vv{color:#1a5c1a!important}.vd{color:#666!important}' +
+    '.st{color:#333!important}.st::after{background:#ccc!important}' +
+    '.alert{animation:none!important}' +
+    '#print-head{display:block!important}' +
+    '.kg4{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:10px!important}' +
+    '.vb{display:grid!important;grid-template-columns:1fr 1fr!important;gap:16px!important}';
+
+  var wrapper = document.createElement('div');
+  wrapper.style.cssText = 'background:#fff; padding:20px; font-family:Arial,sans-serif; color:#111; max-width:900px;';
+  wrapper.appendChild(estilo);
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
+
+  var opcoes = {
+    margin: [8, 8, 8, 8],
+    filename: nomeArquivo,
+    image: { type: 'jpeg', quality: 0.92 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css'] }
+  };
+
+  html2pdf().set(opcoes).from(wrapper).save()
+    .then(function() {
+      document.body.removeChild(wrapper);
+      loader.classList.remove('show');
+    })
+    .catch(function(err) {
+      console.error(err);
+      document.body.removeChild(wrapper);
+      loader.classList.remove('show');
+      alert('Erro ao gerar PDF. Tente Imprimir > Salvar como PDF pelo navegador.');
+    });
+}
+
+/* ---- ZERAR ---- */
+function zerarSistema() {
+  if (!confirm('Deseja zerar todos os dados do sistema?')) return;
+  document.querySelectorAll('input').forEach(function(i) { i.value = ''; });
+  document.querySelectorAll('.f.custom').forEach(function(d) { d.remove(); });
+  el('results').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
